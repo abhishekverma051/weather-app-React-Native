@@ -1,20 +1,70 @@
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
+import * as React from "react";
+import { NavigationContainer } from "@react-navigation/native";
+import { createStackNavigator } from "@react-navigation/stack";
+import DetailedWeather from "./src/screens/app/detailedWeather";
+import Weather from "./src/screens/app/index";
+import SearchScreen from "./src/screens/app/searchBar";
+import AqiScreen from "./src/screens/app/aqiScreen";
+import WeatherScreen from "./src/screens/app/dataScreen";
+const Stack = createStackNavigator();
 
-export default function App() {
+const App = () => {
   return (
-    <View style={styles.container}>
-      <Text>Open up App.js to start working on your app!</Text>
-      <StatusBar style="auto" />
-    </View>
+    <NavigationContainer>
+      <Stack.Navigator initialRouteName="WeatherApp">
+        <Stack.Screen
+          name="Weather"
+          component={Weather}
+          options={{
+            headerStyle: {
+              backgroundColor: "rgb(40, 55, 50)",
+            },
+            headerTintColor: "#fff",
+          }}
+        />
+        <Stack.Screen
+          name="Search"
+          component={SearchScreen}
+          options={{
+            headerStyle: {
+              backgroundColor: "rgb(40, 55, 50)",
+            },
+            headerTintColor: "#fff",
+          }}
+        />
+        <Stack.Screen
+          name="DetailedWeather"
+          component={DetailedWeather}
+          options={{
+            headerStyle: {
+              backgroundColor: "rgb(40, 55, 50)",
+            },
+            headerTintColor: "#fff",
+          }}
+        />
+        <Stack.Screen
+          name="AQI"
+          component={AqiScreen}
+          options={{
+            headerStyle: {
+              backgroundColor: "rgb(40, 55, 50)",
+            },
+            headerTintColor: "#fff",
+          }}
+        />
+        <Stack.Screen
+          name="WeatherScreen"
+          component={WeatherScreen}
+          options={{
+            headerStyle: {
+              backgroundColor: "black",
+            },
+            headerTintColor: "#fff",
+          }}
+        />
+      </Stack.Navigator>
+    </NavigationContainer>
   );
-}
+};
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});
+export default App;
