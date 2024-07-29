@@ -1,19 +1,70 @@
-import React, { useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import {
   View,
   Text,
   StyleSheet,
   TouchableOpacity,
-  FlatList,
+  Alert,
+  ActivityIndicator,
+  RefreshControl,
 } from "react-native";
+import {
+  GestureHandlerRootView,
+  Swipeable,
+} from "react-native-gesture-handler";
+import { MaterialIcons } from "@expo/vector-icons";
+import DraggableFlatList from "react-native-draggable-flatlist";
+import {
+  getDataFromAsyncStorage,
+  removeDataFromAsyncStorage,
+} from "../../utils/asyncStorage";
 
-const WeatherInfo = ({ weatherData, navigation }) => {
-  const {} = weatherData;
+const WeatherInfo = ({ navigation }) => {
+  const [data, setData] = useState([]);
+  const [refreshing, setRefreshing] = useState(false);
 
-  const [data, setData] = useState(weatherData);
+   const fetchData = async () => {
+    setRefreshing(true);
+    const updatedData = await getDataFromAsyncStorage();
+    setData(updatedData);
+    setRefreshing(false);
+  };
 
-  const renderItem = ({ item }) => {
-    return (
+  useEffect(() => {
+    fetchData();  
+  }, []);
+
+  const handleDelete = async (item) => {
+    Alert.alert(
+      "Confirm Deletion",
+      "Are you sure you want to delete this item?",
+      [
+        {
+          text: "Cancel",
+          style: "cancel",
+        },
+        {
+          text: "OK",
+          onPress: async () => {
+            await removeDataFromAsyncStorage(item.location);
+            await fetchData();  
+          },
+        },
+      ]
+    );
+  };
+
+  const renderRightActions = (data) => (
+    <TouchableOpacity
+      style={styles.deleteButton}
+      onPress={() => handleDelete(data)}
+    >
+      <MaterialIcons name="delete-forever" size={44} color="red" />
+    </TouchableOpacity>
+  );
+
+  const renderItem = ({ item, index, drag }) => (
+    <Swipeable renderRightActions={() => renderRightActions(item)}>
       <TouchableOpacity
         style={styles.weatherBox}
         onPress={() =>
@@ -21,25 +72,42 @@ const WeatherInfo = ({ weatherData, navigation }) => {
             location: item?.location ?? "",
           })
         }
+        onLongPress={drag}
       >
         <View style={styles.leftContainer}>
           <Text style={styles.cityName}>{item.location}</Text>
           <Text style={styles.condition}>{item.condition}</Text>
         </View>
-        <Text style={styles.temperature}>{item.temp_c}°C</Text>
+        <Text style={styles.temperature}>{item.temp}°C</Text>
       </TouchableOpacity>
-    );
-  };
+    </Swipeable>
+  );
+
+  const onRefresh = useCallback(() => {
+    fetchData();  
+  }, []);
 
   return (
-    <View style={styles.container}>
-      <FlatList
-        data={data}
-        renderItem={renderItem}
-        keyExtractor={(item) => item.id}
-        contentContainerStyle={styles.flatListContent}
-      />
-    </View>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <View style={styles.container}>
+        {data && data.length > 0 ? (
+          <DraggableFlatList
+            data={data}
+            onDragEnd={({ data }) => setData(data)}
+            renderItem={renderItem}
+            keyExtractor={(item) => item.location || item.id}
+            contentContainerStyle={styles.flatListContent}
+            refreshControl={
+              <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+            }
+          />
+        ) : (
+          <View style={styles.centered}>
+            <ActivityIndicator size={"large"} color={"red"} />
+          </View>
+        )}
+      </View>
+    </GestureHandlerRootView>
   );
 };
 
@@ -61,7 +129,6 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.8,
     shadowRadius: 2,
     elevation: 5,
   },
@@ -80,6 +147,18 @@ const styles = StyleSheet.create({
   temperature: {
     fontSize: 34,
     fontWeight: "bold",
+  },
+  deleteButton: {
+    justifyContent: "center",
+    alignItems: "center",
+    width: 80,
+    height: "90%",
+    borderRadius: 10,
+  },
+  centered: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
   },
 });
 

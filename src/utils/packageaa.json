@@ -1,0 +1,57 @@
+[
+    {
+        "condition": "Light rain shower",
+        "location": "Goa",
+        "temp": 28
+    },
+    {
+        "condition": "Light rain shower",
+        "location": "Chandigarh",
+        "temp": 35.3
+    },
+    {
+        "condition": "Thundery outbreaks in nearby",
+        "location": "Haryana",
+        "temp": 37.4
+    },
+    {
+        "condition": "Light rain shower",
+        "location": "Mumbai",
+        "temp": 27.5
+    },
+    {
+        "condition": "Sunny",
+        "location": "Madrid",
+        "temp": 29.4
+    },
+    {
+        "condition": "Partly Cloudy",
+        "location": "Beijing",
+        "temp": 37.5
+    },
+    {
+        "condition": "Partly Cloudy",
+        "location": "Beijing",
+        "temp": 37.5
+    },
+    {
+        "condition": "Sunny",
+        "location": "Tokyo",
+        "temp": 33.8
+    },
+    {
+        "condition": "Thundery outbreaks in nearby",
+        "location": "Jammu",
+        "temp": 31.8
+    },
+    {
+        "condition": "Sunny",
+        "location": "Chennai",
+        "temp": 33.3
+    },
+    {
+        "condition": "Sunny",
+        "location": "Chennai",
+        "temp": 33.3
+    }
+]

@@ -7,12 +7,15 @@ import {
   Alert,
   Text,
 } from "react-native";
+import { FontAwesome } from "@expo/vector-icons";
+import { setData } from "../../utils/helperFunction";
 
 const SearchScreen = ({ navigation }) => {
   const [cityName, setCityName] = useState("");
 
-  const handleSearch = () => {
+  const handleSearch = async () => {
     if (cityName.trim()) {
+      await setData(cityName);
       navigation.navigate("Weather", { cityName });
     } else {
       Alert.alert("Please enter a city name");
@@ -24,6 +27,7 @@ const SearchScreen = ({ navigation }) => {
       <TextInput
         style={styles.input}
         placeholder="Enter city name"
+        placeholderTextColor="gray"
         value={cityName}
         onChangeText={setCityName}
       />
@@ -32,7 +36,7 @@ const SearchScreen = ({ navigation }) => {
         onPress={handleSearch}
         style={styles.button}
       >
-        <Text style={styles.text}>Search</Text>
+        <FontAwesome name="search" size={24} color="white" />
       </TouchableOpacity>
     </View>
   );
@@ -41,33 +45,43 @@ const SearchScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 10,
-    backgroundColor: "black",
-    alignItems: "center",
+    padding: 20,
+    backgroundColor: "rgb(40, 55, 50)",
+    flexDirection: "row",
   },
   input: {
-    height: 40,
+    height: 50,
     borderColor: "gray",
     borderWidth: 1,
     marginBottom: 20,
-    padding: 10,
-    width: "90%",
+    paddingHorizontal: 15,
+    width: "70%",
     borderRadius: 12,
-    color: "Black",
+    color: "black",
     backgroundColor: "white",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.8,
+    shadowRadius: 2,
+    elevation: 5,
   },
   button: {
-    width: "30%",
+    marginLeft: 10,
+    width: 50,
     height: 50,
-    borderWidth: 1,
-    borderRadius: 12,
-    backgroundColor: "white",
+    borderRadius: 25,
+    backgroundColor: "#3b3b3b",
     alignItems: "center",
     justifyContent: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.8,
+    shadowRadius: 2,
+    elevation: 5,
   },
   text: {
     fontSize: 24,
-    fontWeight: "condensedBold",
+    fontWeight: "bold",
     padding: 10,
   },
 });

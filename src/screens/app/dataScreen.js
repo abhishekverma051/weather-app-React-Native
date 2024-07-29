@@ -1,6 +1,5 @@
-// WeatherScreen.js
 import React, { useState, useEffect } from "react";
-import { View, Text, ActivityIndicator, StyleSheet } from "react-native";
+import { View, Text, StyleSheet } from "react-native";
 
 const WeatherScreen = ({ route, navigation }) => {
   const { cityName } = route.params;
@@ -24,14 +23,6 @@ const WeatherScreen = ({ route, navigation }) => {
 
     fetchWeatherData();
   }, [cityName]);
-
-  if (loading) {
-    return (
-      <View style={styles.container}>
-        <ActivityIndicator size="large" color="#0000ff" />
-      </View>
-    );
-  }
 
   if (!weatherData) {
     return (

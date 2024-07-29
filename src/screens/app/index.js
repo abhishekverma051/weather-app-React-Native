@@ -9,11 +9,12 @@ import {
   TouchableOpacity,
 } from "react-native";
 import WeatherInfo from "./weatherInfo";
+import ProfileScreen from "../auth/user";
 import { AntDesign } from "@expo/vector-icons";
 import axios from "axios";
-
+import { getDataFromAsyncStorage } from "../../utils/asyncStorage";
+import SettingScreen from "./settingScreen";
 const API_KEY = "be1c284fc6564c83938100901242407";
-
 export async function getMyData(cityName) {
   try {
     const response = await axios.get(
@@ -30,44 +31,24 @@ export async function getMyData(cityName) {
   }
 }
 
-const Weather = ({ navigation }) => {
+const Weather = ({ navigation, route }) => {
   const [weatherData, setWeatherData] = useState([]);
+  const cityName = route?.params?.cityName;
 
-  function getLocations() {
-    return [
-      {
-        id: "1",
-        location: "Mohali",
-        condition: "Sunny",
-        temp_c: "34",
-      },
-      {
-        id: "2",
-        location: "Chandigarh",
-        condition: "Rainy",
-        temp_c: "37",
-      },
-      {
-        id: "3",
-        location: "Shimla",
-        condition: "Cold",
-        temp_c: "27",
-      },
-      {
-        id: "4",
-        location: "Delhi",
-        condition: "Hot",
-        temp_c: "45",
-      },
-    ];
+  async function getLocations() {
+    const data = await getDataFromAsyncStorage();
+     
+    return data;
   }
 
   useEffect(() => {
-    const data = getLocations();
-    setWeatherData(data);
-  }, []);
-
-  useEffect(() => {}, [weatherData]);
+    getLocations().then((res) => {
+      setWeatherData(res);
+    });
+  }, [cityName]);
+  useEffect(() => {
+  //  console.log(weatherData, "index");
+  }, [weatherData]);
 
   if (!weatherData || weatherData.length < 1) {
     return (
@@ -86,6 +67,7 @@ const Weather = ({ navigation }) => {
             size={28}
             color="white"
             style={styles.icon}
+            onPress={() => navigation.navigate("SettingScreen")}
           />
         </TouchableOpacity>
         <TouchableOpacity>
@@ -94,11 +76,14 @@ const Weather = ({ navigation }) => {
             size={34}
             color="white"
             style={styles.icon1}
+            onPress={() => navigation.navigate("ProfileScreen")}
           />
         </TouchableOpacity>
       </View>
 
-      <WeatherInfo weatherData={weatherData} navigation={navigation} />
+      {weatherData && weatherData.length > 0 && (
+        <WeatherInfo weatherData={weatherData} navigation={navigation} />
+      )}
       <TouchableOpacity
         style={styles.button}
         onPress={() => navigation.navigate("Search")}
@@ -133,5 +118,4 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
   },
 });
-
 export default Weather;

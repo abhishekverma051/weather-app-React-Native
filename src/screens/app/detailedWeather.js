@@ -156,17 +156,16 @@ const DetailedWeather = ({ route, navigation }) => {
           renderItem={({ item }) => (
             <View style={styles.forecastItem1}>
               <View style={styles.forecastItemContent}>
-                <Text style={styles.forecastTime}>{item.date}</Text>
-
+                <Text style={styles.forecastDate}>{item.date}</Text>
                 <Image
                   style={styles.icon}
                   source={{ uri: `https:${item.day.condition.icon}` }}
                 />
+                <Text style={styles.forecastTemp}>{item.day.avgtemp_c}°C</Text>
+                <Text style={styles.forecastCondition}>
+                  {item.day.condition.text}
+                </Text>
               </View>
-              <Text style={styles.forecastTemp}>{item.day.avgtemp_c}°C</Text>
-              <Text style={styles.forecastCondition}>
-                {item.day.condition.text}
-              </Text>
             </View>
           )}
           keyExtractor={(item) => item.date}
@@ -297,7 +296,6 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(255, 255, 255, 0.2)",
     borderRadius: 10,
     padding: 10,
-    marginHorizontal: 5,
     alignItems: "center",
     justifyContent: "center",
     minWidth: 100,
@@ -322,6 +320,7 @@ const styles = StyleSheet.create({
   },
   forecastList: {
     paddingHorizontal: 5,
+    gap: 10,
   },
   detailsRow: {
     flexDirection: "row",
@@ -358,20 +357,39 @@ const styles = StyleSheet.create({
   },
   forecastItem1: {
     backgroundColor: "rgba(255, 255, 255, 0.2)",
-    width: "100%",
     margin: 5,
     borderRadius: 12,
     padding: 10,
+    flexDirection: "row",
+    alignItems: "center",
   },
   forecastSection1: {
     flex: 1,
-    margin: 12,
   },
   forecastItemContent: {
     flexDirection: "row",
     alignItems: "center",
-    flex: 1,
     justifyContent: "space-between",
+    flex: 1,
+    padding: 8,
+  },
+  forecastDate: {
+    color: "white",
+    fontSize: 12,
+    flex: 1,
+    textAlign: "left",
+  },
+  forecastTemp: {
+    color: "white",
+    fontSize: 18,
+    fontWeight: "bold",
+    flex: 1,
+    textAlign: "center",
+  },
+  forecastCondition: {
+    color: "white",
+    flex: 2,
+    textAlign: "right",
   },
 });
 
