@@ -9,7 +9,7 @@ import {
   ActivityIndicator,
 } from "react-native";
 
-const img = require("/Users/tanmaygirdhar/ReactNative/MusicApp/src/img/weather-icon-with-sun-and-cloud-on-transparent-background-free-png.webp");
+const img = require("/Users/tanmaygirdhar/ReactNative/WeatherApp/src/img/weather-icon-with-sun-and-cloud-on-transparent-background-free-png.webp");
 const SplashScreen = ({ navigation }) => {
   const [loading, setLoading] = useState(true);
   const fadeAnim = new Animated.Value(0);

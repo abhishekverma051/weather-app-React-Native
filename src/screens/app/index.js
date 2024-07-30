@@ -47,7 +47,7 @@ const Weather = ({ navigation, route }) => {
     });
   }, [cityName]);
   useEffect(() => {
-  //  console.log(weatherData, "index");
+  console.log(weatherData, "index");
   }, [weatherData]);
 
   if (!weatherData || weatherData.length < 1) {

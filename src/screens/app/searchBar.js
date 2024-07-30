@@ -5,18 +5,33 @@ import {
   TouchableOpacity,
   StyleSheet,
   Alert,
-  Text,
 } from "react-native";
 import { FontAwesome } from "@expo/vector-icons";
-import { setData } from "../../utils/helperFunction";
+import { useLocations } from "./locationContext";  
 
 const SearchScreen = ({ navigation }) => {
   const [cityName, setCityName] = useState("");
+  const { addLocation } = useLocations();
 
   const handleSearch = async () => {
     if (cityName.trim()) {
-      await setData(cityName);
-      navigation.navigate("Weather", { cityName });
+      Alert.alert(
+        "Confirm Modification",
+        "Are you sure you want to add this location?",
+        [
+          {
+            text: "Cancel",
+            style: "cancel",
+          },
+          {
+            text: "OK",
+            onPress: () => {
+              addLocation(cityName);  
+              navigation.navigate("Weather", { cityName });  
+            },
+          },
+        ]
+      );
     } else {
       Alert.alert("Please enter a city name");
     }
@@ -31,11 +46,7 @@ const SearchScreen = ({ navigation }) => {
         value={cityName}
         onChangeText={setCityName}
       />
-      <TouchableOpacity
-        title="Search"
-        onPress={handleSearch}
-        style={styles.button}
-      >
+      <TouchableOpacity onPress={handleSearch} style={styles.button}>
         <FontAwesome name="search" size={24} color="white" />
       </TouchableOpacity>
     </View>
@@ -78,11 +89,6 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.8,
     shadowRadius: 2,
     elevation: 5,
-  },
-  text: {
-    fontSize: 24,
-    fontWeight: "bold",
-    padding: 10,
   },
 });
 

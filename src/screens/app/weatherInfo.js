@@ -1,12 +1,12 @@
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   View,
   Text,
   StyleSheet,
   TouchableOpacity,
-  Alert,
   ActivityIndicator,
   RefreshControl,
+  Alert,
 } from "react-native";
 import {
   GestureHandlerRootView,
@@ -14,56 +14,70 @@ import {
 } from "react-native-gesture-handler";
 import { MaterialIcons } from "@expo/vector-icons";
 import DraggableFlatList from "react-native-draggable-flatlist";
+import { useLocations } from "./locationContext";
 import {
   getDataFromAsyncStorage,
+  setDataToAsyncStorage,
   removeDataFromAsyncStorage,
-} from "../../utils/asyncStorage";
+} from "/Users/tanmaygirdhar/ReactNative/WeatherApp/src/utils/asyncStorage.js";
 
 const WeatherInfo = ({ navigation }) => {
-  const [data, setData] = useState([]);
+  const { locations, removeLocation } = useLocations();
+  const [data, setData] = useState(locations);
   const [refreshing, setRefreshing] = useState(false);
 
-   const fetchData = async () => {
+  useEffect(() => {
+    const loadData = async () => {
+      const storedData = await getDataFromAsyncStorage();
+      setData(storedData);
+    };
+    loadData();
+  }, []);
+
+  useEffect(() => {
+    setData(locations);
+  }, [locations]);
+
+  const fetchData = async () => {
     setRefreshing(true);
     const updatedData = await getDataFromAsyncStorage();
     setData(updatedData);
     setRefreshing(false);
   };
 
-  useEffect(() => {
-    fetchData();  
-  }, []);
-
-  const handleDelete = async (item) => {
+  const confirmDelete = (location) => {
     Alert.alert(
-      "Confirm Deletion",
-      "Are you sure you want to delete this item?",
+      "Delete Location",
+      `Are you sure you want to delete ${location.location}?`,
       [
         {
           text: "Cancel",
           style: "cancel",
         },
         {
-          text: "OK",
-          onPress: async () => {
-            await removeDataFromAsyncStorage(item.location);
-            await fetchData();  
-          },
+          text: "Delete",
+          onPress: () => handleDelete(location),
+          style: "destructive",
         },
-      ]
+      ],
+      { cancelable: true }
     );
   };
 
-  const renderRightActions = (data) => (
+  const handleDelete = (location) => {
+    removeLocation(location.location);
+  };
+
+  const renderRightActions = (item) => (
     <TouchableOpacity
       style={styles.deleteButton}
-      onPress={() => handleDelete(data)}
+      onPress={() => confirmDelete(item)}
     >
       <MaterialIcons name="delete-forever" size={44} color="red" />
     </TouchableOpacity>
   );
 
-  const renderItem = ({ item, index, drag }) => (
+  const renderItem = ({ item, drag }) => (
     <Swipeable renderRightActions={() => renderRightActions(item)}>
       <TouchableOpacity
         style={styles.weatherBox}
@@ -75,7 +89,7 @@ const WeatherInfo = ({ navigation }) => {
         onLongPress={drag}
       >
         <View style={styles.leftContainer}>
-          <Text style={styles.cityName}>{item.location}</Text>
+          <Text style={styles.cityName1}>{item.location}</Text>
           <Text style={styles.condition}>{item.condition}</Text>
         </View>
         <Text style={styles.temperature}>{item.temp}°C</Text>
@@ -84,8 +98,13 @@ const WeatherInfo = ({ navigation }) => {
   );
 
   const onRefresh = useCallback(() => {
-    fetchData();  
+    fetchData();
   }, []);
+
+  const handleDragEnd = ({ data }) => {
+    setData(data);
+    setDataToAsyncStorage(data);
+  };
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
@@ -93,7 +112,7 @@ const WeatherInfo = ({ navigation }) => {
         {data && data.length > 0 ? (
           <DraggableFlatList
             data={data}
-            onDragEnd={({ data }) => setData(data)}
+            onDragEnd={handleDragEnd}
             renderItem={renderItem}
             keyExtractor={(item) => item.location || item.id}
             contentContainerStyle={styles.flatListContent}
@@ -135,7 +154,7 @@ const styles = StyleSheet.create({
   leftContainer: {
     flex: 1,
   },
-  cityName: {
+  cityName1: {
     fontSize: 24,
     fontWeight: "bold",
     marginBottom: 10,

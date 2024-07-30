@@ -10,7 +10,7 @@ import {
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 const AboutPage = () => {
-  const img = require("/Users/tanmaygirdhar/ReactNative/MusicApp/src/img/weather-icon-with-sun-and-cloud-on-transparent-background-free-png.webp");
+  const img = require("/Users/tanmaygirdhar/ReactNative/WeatherApp/src/img/weather-icon-with-sun-and-cloud-on-transparent-background-free-png.webp");
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
