@@ -24,7 +24,7 @@ const DetailedWeather = ({ route, navigation }) => {
     getMyData(location).then((res) => {
       setWeatherData(res);
     });
-  }, []);
+  }, [location]);
 
   const onRefresh = useCallback(() => {
     setIsRefreshing(true);
@@ -84,14 +84,14 @@ const DetailedWeather = ({ route, navigation }) => {
     <View>
       <View style={styles.detailsRow}>
         <View style={styles.detailContainer}>
-          <Feather name="wind" size={24} color="white" />
+          <Feather name="wind" size={24} color="skyblue" />
           <Text style={styles.detailLabel}>Wind Speed</Text>
           <Text style={styles.detailValue}>
             {weatherData.current.wind_kph} kph
           </Text>
         </View>
         <View style={styles.detailContainer}>
-          <Feather name="droplet" size={24} color="white" />
+          <Feather name="droplet" size={24} color="#9697e8" />
           <Text style={styles.detailLabel}>Humidity</Text>
           <Text style={styles.detailValue}>
             {weatherData.current.humidity}%
@@ -100,14 +100,14 @@ const DetailedWeather = ({ route, navigation }) => {
       </View>
       <View style={styles.detailsRow}>
         <View style={styles.detailContainer}>
-          <Feather name="thermometer" size={24} color="white" />
+          <Feather name="thermometer" size={24} color="red" />
           <Text style={styles.detailLabel}>Feels Like</Text>
           <Text style={styles.detailValue}>
             {weatherData.current.feelslike_c}°C
           </Text>
         </View>
         <View style={styles.detailContainer}>
-          <Feather name="sunset" size={24} color="yellow" />
+          <Feather name="sunset" size={24} color="#f9a61d" />
           <Text style={styles.detailLabel}>Sunset</Text>
           <Text style={styles.detailValue}>
             {weatherData.forecast.forecastday[0].astro.sunset}
@@ -116,12 +116,12 @@ const DetailedWeather = ({ route, navigation }) => {
       </View>
       <View style={styles.detailsRow}>
         <View style={styles.detailContainer}>
-          <Feather name="sun" size={24} color="white" />
+          <Feather name="sun" size={24} color="#c9f5ef" />
           <Text style={styles.detailLabel}>UV Index</Text>
           <Text style={styles.detailValue}>{weatherData.current.uv}</Text>
         </View>
         <View style={styles.detailContainer}>
-          <Feather name="bar-chart-2" size={24} color="white" />
+          <Feather name="bar-chart-2" size={24} color="#c8a7f2" />
           <Text style={styles.detailLabel}>Pressure</Text>
           <Text style={styles.detailValue}>
             {weatherData.current.pressure_mb} mb
@@ -194,35 +194,37 @@ const DetailedWeather = ({ route, navigation }) => {
   };
 
   if (!weatherData || weatherData.length < 1) {
-    return <View></View>;
+    return <View style={styles.container}></View>;
   }
 
   return (
-    <FlatList
-      data={data}
-      renderItem={renderItem}
-      keyExtractor={(item, index) => index.toString()}
-      contentContainerStyle={styles.container}
-      ListFooterComponent={
-        <TouchableOpacity
-          style={styles.footer}
-          onPress={() => navigation.navigate("AQI", { weatherData })}
-        >
-          <View style={styles.footerContent}>
-            <Text style={styles.detailLabel}>AQI Index:</Text>
-            <Text style={styles.detailValue}>80</Text>
-          </View>
-        </TouchableOpacity>
-      }
-      refreshControl={
-        <RefreshControl
-          refreshing={isRefreshing}
-          onRefresh={onRefresh}
-          colors={["#ffffff"]}
-          tintColor={"#ffffff"}
-        />
-      }
-    />
+    <View style={styles.container}>
+      <FlatList
+        data={data}
+        renderItem={renderItem}
+        keyExtractor={(item, index) => index.toString()}
+        contentContainerStyle={styles.flatListContent}
+        ListFooterComponent={
+          <TouchableOpacity
+            style={styles.footer}
+            onPress={() => navigation.navigate("AQI", { weatherData })}
+          >
+            <View style={styles.footerContent}>
+              <Text style={styles.detailLabel}>AQI Index:</Text>
+              <Text style={styles.detailValue}>80</Text>
+            </View>
+          </TouchableOpacity>
+        }
+        refreshControl={
+          <RefreshControl
+            refreshing={isRefreshing}
+            onRefresh={onRefresh}
+            colors={["#ffffff"]}
+            tintColor={"#ffffff"}
+          />
+        }
+      />
+    </View>
   );
 };
 
@@ -230,6 +232,9 @@ const styles = StyleSheet.create({
   container: {
     backgroundColor: "rgb(40, 55, 50)",
     padding: 20,
+    flex: 1,
+  },
+  flatListContent: {
     flexGrow: 1,
   },
   errorText: {

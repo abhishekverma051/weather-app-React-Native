@@ -1,4 +1,5 @@
 import * as React from "react";
+import { View, StyleSheet } from "react-native";
 import { NavigationContainer } from "@react-navigation/native";
 import { createStackNavigator } from "@react-navigation/stack";
 import DetailedWeather from "./src/screens/app/detailedWeather";
@@ -10,106 +11,116 @@ import SplashScreen from "./src/screens/app/splashScreen";
 import ProfileScreen from "./src/screens/auth/user";
 import SettingScreen from "./src/screens/app/settingScreen";
 import AboutPage from "./src/screens/auth/aboutScreen";
+
 const Stack = createStackNavigator();
 
 const App = () => {
   return (
     <NavigationContainer>
-      <Stack.Navigator initialRouteName="SplashScreen">
-        <Stack.Screen
-          name="SplashScreen"
-          component={SplashScreen}
-          options={{
-            headerStyle: {
-              backgroundColor: "rgb(40, 55, 50)",
-            },
-            headerShown: false,
-            headerTintColor: "#fff",
-          }}
-        />
-        <Stack.Screen
-          name="Weather"
-          component={Weather}
-          options={{
-            headerStyle: {
-              backgroundColor: "rgb(40, 55, 50)",
-            },
-            headerTintColor: "#fff",
-          }}
-        />
-        <Stack.Screen
-          name="Search"
-          component={SearchScreen}
-          options={{
-            headerStyle: {
-              backgroundColor: "rgb(40, 55, 50)",
-            },
-            headerTintColor: "#fff",
-          }}
-        />
-        <Stack.Screen
-          name="DetailedWeather"
-          component={DetailedWeather}
-          options={{
-            headerStyle: {
-              backgroundColor: "rgb(40, 55, 50)",
-            },
-            headerTintColor: "#fff",
-          }}
-        />
-        <Stack.Screen
-          name="AQI"
-          component={AqiScreen}
-          options={{
-            headerStyle: {
-              backgroundColor: "rgb(40, 55, 50)",
-            },
-            headerTintColor: "#fff",
-          }}
-        />
-        <Stack.Screen
-          name="WeatherScreen"
-          component={WeatherScreen}
-          options={{
-            headerStyle: {
-              backgroundColor: "rgb(40, 55, 50)",
-            },
-            headerTintColor: "#fff",
-          }}
-        />
-        <Stack.Screen
-          name="ProfileScreen"
-          component={ProfileScreen}
-          options={{
-            headerStyle: {
-              backgroundColor: "rgb(40, 55, 50)",
-            },
-            headerTintColor: "#fff",
-          }}
-        />
-        <Stack.Screen
-          name="SettingScreen"
-          component={SettingScreen}
-          options={{
-            headerStyle: {
-              backgroundColor: "rgb(40, 55, 50)",
-            },
-            headerTintColor: "#fff",
-          }}
-        />
-        <Stack.Screen
-          name="AboutScreen"
-          component={AboutPage}
-          options={{
-            headerStyle: {
-              backgroundColor: "rgb(40, 55, 50)",
-            },
-            headerTintColor: "#fff",
-          }}
-        />
-      </Stack.Navigator>
+      <View style={styles.container}>
+        <Stack.Navigator initialRouteName="SplashScreen">
+          <Stack.Screen
+            name="SplashScreen"
+            component={SplashScreen}
+            options={{
+              headerStyle: {
+                backgroundColor: "rgb(40, 55, 50)",
+              },
+              headerShown: false,
+              headerTintColor: "#fff",
+            }}
+          />
+          <Stack.Screen
+            name="Weather"
+            component={Weather}
+            options={{
+              headerStyle: {
+                backgroundColor: "rgb(40, 55, 50)",
+              },
+              headerTintColor: "#fff",
+            }}
+          />
+          <Stack.Screen
+            name="Search"
+            component={SearchScreen}
+            options={{
+              headerStyle: {
+                backgroundColor: "rgb(40, 55, 50)",
+              },
+              headerTintColor: "#fff",
+            }}
+          />
+          <Stack.Screen
+            name="DetailedWeather"
+            component={DetailedWeather}
+            options={{
+              headerStyle: {
+                backgroundColor: "rgb(40, 55, 50)",
+              },
+              headerTintColor: "#fff",
+            }}
+          />
+          <Stack.Screen
+            name="AQI"
+            component={AqiScreen}
+            options={{
+              headerStyle: {
+                backgroundColor: "rgb(40, 55, 50)",
+              },
+              headerTintColor: "#fff",
+            }}
+          />
+          <Stack.Screen
+            name="WeatherScreen"
+            component={WeatherScreen}
+            options={{
+              headerStyle: {
+                backgroundColor: "rgb(40, 55, 50)",
+              },
+              headerTintColor: "#fff",
+            }}
+          />
+          <Stack.Screen
+            name="ProfileScreen"
+            component={ProfileScreen}
+            options={{
+              headerStyle: {
+                backgroundColor: "rgb(40, 55, 50)",
+              },
+              headerTintColor: "#fff",
+            }}
+          />
+          <Stack.Screen
+            name="SettingScreen"
+            component={SettingScreen}
+            options={{
+              headerStyle: {
+                backgroundColor: "rgb(40, 55, 50)",
+              },
+              headerTintColor: "#fff",
+            }}
+          />
+          <Stack.Screen
+            name="AboutScreen"
+            component={AboutPage}
+            options={{
+              headerStyle: {
+                backgroundColor: "rgb(40, 55, 50)",
+              },
+              headerTintColor: "#fff",
+            }}
+          />
+        </Stack.Navigator>
+      </View>
     </NavigationContainer>
   );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: "rgb(40, 55, 50)",
+  },
+});
 
 export default App;
