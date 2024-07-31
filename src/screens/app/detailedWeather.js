@@ -13,35 +13,37 @@ import { getMyData } from ".";
 import PagerView from "react-native-pager-view";
 
 const DetailedWeather = ({ route, navigation }) => {
-  const { location, allLocations } = route.params;
-  const [weatherData, setWeatherData] = useState([]);
-
-  if (!location || location.length < 1) {
-    return <View></View>;
-  }
+  const { allLocations } = route.params;
+  const [weatherDataList, setWeatherDataList] = useState([]);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
+  const fetchWeatherData = async (location) => {
+    try {
+      const data = await getMyData(location);
+      return data;
+    } catch (error) {
+      console.error(error);
+      return null;
+    }
+  };
+
   useEffect(() => {
-    getMyData(location).then((res) => {
-      setWeatherData(res);
-    });
-  }, [location]);
+    const fetchDataForAllLocations = async () => {
+      const data = await Promise.all(
+        allLocations.map((loc) => fetchWeatherData(loc.location))
+      );
+      setWeatherDataList(data);
+    };
+
+    fetchDataForAllLocations();
+  }, [allLocations]);
 
   const onRefresh = useCallback(() => {
     setIsRefreshing(true);
-
     setTimeout(() => {
       setIsRefreshing(false);
     }, 2000);
   }, []);
-
-  if (!weatherData) {
-    return (
-      <View style={styles.container}>
-        <Text style={styles.errorText}>Weather data not available</Text>
-      </View>
-    );
-  }
 
   const renderForecastItem = ({ item }) => (
     <View style={styles.forecastItem}>
@@ -57,7 +59,7 @@ const DetailedWeather = ({ route, navigation }) => {
     </View>
   );
 
-  const renderHeader = () => (
+  const renderHeader = (weatherData) => (
     <View style={styles.headerContainer}>
       <Text style={styles.cityName}>{weatherData.location.name}</Text>
       <Text style={styles.text}>{weatherData.location.tz_id}</Text>
@@ -65,7 +67,7 @@ const DetailedWeather = ({ route, navigation }) => {
     </View>
   );
 
-  const renderHeader2 = () => (
+  const renderHeader2 = (weatherData) => (
     <View style={styles.weatherHeading}>
       <View style={styles.leftContainer}>
         <Text style={styles.heading}>Weather</Text>
@@ -81,7 +83,7 @@ const DetailedWeather = ({ route, navigation }) => {
     </View>
   );
 
-  const renderDetails = () => (
+  const renderDetails = (weatherData) => (
     <View>
       <View style={styles.detailsRow}>
         <View style={styles.detailContainer}>
@@ -132,7 +134,7 @@ const DetailedWeather = ({ route, navigation }) => {
     </View>
   );
 
-  const renderForecastSection = () => (
+  const renderForecastSection = (weatherData) => (
     <View style={styles.forecastSection}>
       <Text style={styles.forecastTitle}>24 Hour Forecast</Text>
       <FlatList
@@ -146,7 +148,7 @@ const DetailedWeather = ({ route, navigation }) => {
     </View>
   );
 
-  const renderFullWeekForecast = () => {
+  const renderFullWeekForecast = (weatherData) => {
     const forecastData = weatherData.forecast.forecastday.slice(0, 7);
 
     return (
@@ -177,59 +179,74 @@ const DetailedWeather = ({ route, navigation }) => {
     );
   };
 
-  const data = [
-    { type: "header" },
-    { type: "header2" },
-    { type: "forecastSection" },
-    { type: "fullWeekForecast" },
-    { type: "details" },
-  ];
+  const renderItem = (weatherData) => {
+    if (!weatherData) {
+      return (
+        <View style={styles.container}>
+          <Text style={styles.errorText}>Weather data not available</Text>
+        </View>
+      );
+    }
 
-  const renderItem = ({ item }) => {
-    if (item.type === "header") return renderHeader();
-    if (item.type === "header2") return renderHeader2();
-    if (item.type === "forecastSection") return renderForecastSection();
-    if (item.type === "fullWeekForecast") return renderFullWeekForecast();
-    if (item.type === "details") return renderDetails();
-    return null;
+    return (
+      <FlatList
+        data={[
+          { type: "header" },
+          { type: "header2" },
+          { type: "forecastSection" },
+          { type: "fullWeekForecast" },
+          { type: "details" },
+        ]}
+        renderItem={({ item }) => {
+          if (item.type === "header") return renderHeader(weatherData);
+          if (item.type === "header2") return renderHeader2(weatherData);
+          if (item.type === "forecastSection")
+            return renderForecastSection(weatherData);
+          if (item.type === "fullWeekForecast")
+            return renderFullWeekForecast(weatherData);
+          if (item.type === "details") return renderDetails(weatherData);
+          return null;
+        }}
+        keyExtractor={(item, index) => index.toString()}
+        contentContainerStyle={styles.flatListContent}
+        ListFooterComponent={
+          <View style={styles.footerContainer}>
+            <TouchableOpacity
+              style={styles.footer}
+              onPress={() => navigation.navigate("AQI", { weatherData })}
+            >
+              <View style={styles.footerContent}>
+                <Text style={styles.detailLabel}>AQI Index:</Text>
+                <Text style={styles.detailValue}>80</Text>
+              </View>
+            </TouchableOpacity>
+          </View>
+        }
+        refreshControl={
+          <RefreshControl
+            refreshing={isRefreshing}
+            onRefresh={onRefresh}
+            colors={["black"]}
+            tintColor={"black"}
+          />
+        }
+      />
+    );
   };
 
-  if (!weatherData || weatherData.length < 1) {
-    return <View style={styles.container}></View>;
+  if (weatherDataList.length < 1) {
+    return (
+      <View style={styles.container}>
+        <Text style={styles.errorText}>Loading weather data...</Text>
+      </View>
+    );
   }
 
   return (
     <PagerView style={styles.container} initialPage={0}>
-      {allLocations.map((loc, index) => (
+      {weatherDataList.map((weatherData, index) => (
         <View key={index} style={styles.page}>
-          <FlatList
-            data={data}
-            renderItem={renderItem}
-            keyExtractor={(item, index) => index.toString()}
-            contentContainerStyle={styles.flatListContent}
-            ListFooterComponent={
-              <View style={styles.footerContainer}>
-
-              <TouchableOpacity
-                style={styles.footer}
-                onPress={() => navigation.navigate("AQI", { weatherData })}
-              >
-                <View style={styles.footerContent}>
-                  <Text style={styles.detailLabel}>AQI Index:</Text>
-                  <Text style={styles.detailValue}>80</Text>
-                </View>
-              </TouchableOpacity>
-              </View>
-            }
-            refreshControl={
-              <RefreshControl
-                refreshing={isRefreshing}
-                onRefresh={onRefresh}
-                colors={["black"]}
-                tintColor={"black"}
-              />
-            }
-          />
+          {renderItem(weatherData)}
         </View>
       ))}
     </PagerView>
@@ -253,8 +270,8 @@ const styles = StyleSheet.create({
   },
   headerContainer: {
     marginBottom: 10,
-    margin:5,
-    marginLeft:10
+    margin: 5,
+    marginLeft: 10,
   },
   cityName: {
     fontSize: 36,
@@ -274,7 +291,7 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
     padding: 10,
-    margin:5
+    margin: 5,
   },
   heading: {
     textAlign: "left",
@@ -360,17 +377,16 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "bold",
   },
-  footerContainer:{
-        marginBottom:10
+  footerContainer: {
+    marginBottom: 10,
   },
   footer: {
     marginTop: 20,
     padding: 10,
     backgroundColor: "rgba(255, 255, 255, 0.2)",
     borderRadius: 10,
-    marginLeft:7,
-    marginRight:7,
-    
+    marginLeft: 7,
+    marginRight: 7,
   },
   footerContent: {
     flexDirection: "row",
