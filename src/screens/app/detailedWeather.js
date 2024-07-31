@@ -10,10 +10,11 @@ import {
 } from "react-native";
 import { Feather } from "@expo/vector-icons";
 import { getMyData } from ".";
+import PagerView from "react-native-pager-view";
 
 const DetailedWeather = ({ route, navigation }) => {
+  const { location, allLocations } = route.params;
   const [weatherData, setWeatherData] = useState([]);
-  const { location } = route?.params ?? "";
 
   if (!location || location.length < 1) {
     return <View></View>;
@@ -198,33 +199,40 @@ const DetailedWeather = ({ route, navigation }) => {
   }
 
   return (
-    <View style={styles.container}>
-      <FlatList
-        data={data}
-        renderItem={renderItem}
-        keyExtractor={(item, index) => index.toString()}
-        contentContainerStyle={styles.flatListContent}
-        ListFooterComponent={
-          <TouchableOpacity
-            style={styles.footer}
-            onPress={() => navigation.navigate("AQI", { weatherData })}
-          >
-            <View style={styles.footerContent}>
-              <Text style={styles.detailLabel}>AQI Index:</Text>
-              <Text style={styles.detailValue}>80</Text>
-            </View>
-          </TouchableOpacity>
-        }
-        refreshControl={
-          <RefreshControl
-            refreshing={isRefreshing}
-            onRefresh={onRefresh}
-            colors={["#ffffff"]}
-            tintColor={"#ffffff"}
+    <PagerView style={styles.container} initialPage={0}>
+      {allLocations.map((loc, index) => (
+        <View key={index} style={styles.page}>
+          <FlatList
+            data={data}
+            renderItem={renderItem}
+            keyExtractor={(item, index) => index.toString()}
+            contentContainerStyle={styles.flatListContent}
+            ListFooterComponent={
+              <View style={styles.footerContainer}>
+
+              <TouchableOpacity
+                style={styles.footer}
+                onPress={() => navigation.navigate("AQI", { weatherData })}
+              >
+                <View style={styles.footerContent}>
+                  <Text style={styles.detailLabel}>AQI Index:</Text>
+                  <Text style={styles.detailValue}>80</Text>
+                </View>
+              </TouchableOpacity>
+              </View>
+            }
+            refreshControl={
+              <RefreshControl
+                refreshing={isRefreshing}
+                onRefresh={onRefresh}
+                colors={["black"]}
+                tintColor={"black"}
+              />
+            }
           />
-        }
-      />
-    </View>
+        </View>
+      ))}
+    </PagerView>
   );
 };
 
@@ -245,6 +253,8 @@ const styles = StyleSheet.create({
   },
   headerContainer: {
     marginBottom: 10,
+    margin:5,
+    marginLeft:10
   },
   cityName: {
     fontSize: 36,
@@ -264,6 +274,7 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
     padding: 10,
+    margin:5
   },
   heading: {
     textAlign: "left",
@@ -349,11 +360,17 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "bold",
   },
+  footerContainer:{
+        marginBottom:10
+  },
   footer: {
     marginTop: 20,
     padding: 10,
     backgroundColor: "rgba(255, 255, 255, 0.2)",
     borderRadius: 10,
+    marginLeft:7,
+    marginRight:7,
+    
   },
   footerContent: {
     flexDirection: "row",
@@ -395,6 +412,9 @@ const styles = StyleSheet.create({
     color: "white",
     flex: 2,
     textAlign: "right",
+  },
+  page: {
+    flex: 1,
   },
 });
 
