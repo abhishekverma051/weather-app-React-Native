@@ -7,6 +7,7 @@ import {
   ActivityIndicator,
   RefreshControl,
   Alert,
+  TextInput,
 } from "react-native";
 import {
   GestureHandlerRootView,
@@ -25,6 +26,8 @@ const WeatherInfo = ({ navigation }) => {
   const { locations, removeLocation } = useLocations();
   const [data, setData] = useState(locations);
   const [refreshing, setRefreshing] = useState(false);
+  const [editingLocation, setEditingLocation] = useState(null);
+  const [newLocation, setNewLocation] = useState("");
 
   useEffect(() => {
     const loadData = async () => {
@@ -68,6 +71,26 @@ const WeatherInfo = ({ navigation }) => {
     removeLocation(location.location);
   };
 
+  const handleEdit = async (location) => {
+    setEditingLocation(location.location);
+    setNewLocation(location.location);
+  };
+
+  const confirmEdit = async () => {
+    if (newLocation.trim() !== "") {
+      const updatedData = data.map((item) =>
+        item.location === editingLocation
+          ? { ...item, location: newLocation }
+          : item
+      );
+      setData(updatedData);
+      setDataToAsyncStorage(updatedData);
+      setEditingLocation(null);
+      const locationData = await getDataFromAsyncStorage();
+      setData(locationData);
+    }
+  };
+
   const renderRightActions = (item) => (
     <TouchableOpacity
       style={styles.deleteButton}
@@ -77,23 +100,49 @@ const WeatherInfo = ({ navigation }) => {
     </TouchableOpacity>
   );
 
+  const renderLeftActions = (item) => (
+    <TouchableOpacity
+      style={styles.editButton}
+      onPress={() => handleEdit(item)}
+    >
+      <MaterialIcons name="edit" size={44} color="blue" />
+    </TouchableOpacity>
+  );
+
   const renderItem = ({ item, drag }) => (
-    <Swipeable renderRightActions={() => renderRightActions(item)}>
-      <TouchableOpacity
-        style={styles.weatherBox}
-        onPress={() =>
-          navigation.navigate("DetailedWeather", {
-            location: item?.location ?? "",
-          })
-        }
-        onLongPress={drag}
-      >
-        <View style={styles.leftContainer}>
-          <Text style={styles.cityName1}>{item.location}</Text>
-          <Text style={styles.condition}>{item.condition}</Text>
+    <Swipeable
+      renderRightActions={() => renderRightActions(item)}
+      renderLeftActions={() => renderLeftActions(item)}
+    >
+      {editingLocation === item.location ? (
+        <View style={styles.editContainer}>
+          <TextInput
+            style={styles.input}
+            value={newLocation}
+            onChangeText={setNewLocation}
+          />
+          <TouchableOpacity style={styles.confirmButton} onPress={confirmEdit}>
+            <Text style={styles.confirmButtonText}>Save</Text>
+          </TouchableOpacity>
         </View>
-        <Text style={styles.temperature}>{item.temp}°C</Text>
-      </TouchableOpacity>
+      ) : (
+        <TouchableOpacity
+          style={styles.weatherBox}
+          onPress={() =>
+            navigation.navigate("DetailedWeather", {
+              location: item?.location ?? "",
+              allLocations: data,
+            })
+          }
+          onLongPress={drag}
+        >
+          <View style={styles.leftContainer}>
+            <Text style={styles.cityName1}>{item.location}</Text>
+            <Text style={styles.condition}>{item.condition}</Text>
+          </View>
+          <Text style={styles.temperature}>{item.temp}°C</Text>
+        </TouchableOpacity>
+      )}
     </Swipeable>
   );
 
@@ -174,10 +223,39 @@ const styles = StyleSheet.create({
     height: "90%",
     borderRadius: 10,
   },
+  editButton: {
+    justifyContent: "center",
+    alignItems: "center",
+    width: 80,
+    height: "90%",
+    borderRadius: 10,
+  },
   centered: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
+  },
+  editContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "rgba(240, 255, 250, 0.7)",
+    borderRadius: 10,
+    padding: 20,
+    marginVertical: 10,
+  },
+  input: {
+    flex: 1,
+    fontSize: 18,
+    marginRight: 10,
+  },
+  confirmButton: {
+    backgroundColor: "blue",
+    padding: 10,
+    borderRadius: 5,
+  },
+  confirmButtonText: {
+    color: "white",
+    fontWeight: "bold",
   },
 });
 
