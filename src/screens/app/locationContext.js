@@ -4,7 +4,7 @@ import {
   getDataFromAsyncStorage,
   setDataToAsyncStorage,
   removeDataFromAsyncStorage,
-} from "/Users/tanmaygirdhar/ReactNative/WeatherApp/src/utils/asyncStorage.js";
+} from "/Users/tanmaygirdhar/ReactNative/WeatherApp/src/utils/asyncStorage.js";  
 
 const LocationContext = createContext();
 
@@ -16,7 +16,9 @@ export const LocationProvider = ({ children }) => {
   useEffect(() => {
     const loadLocations = async () => {
       const storedLocations = await getDataFromAsyncStorage();
-      setLocations(storedLocations);
+      if (Array.isArray(storedLocations)) {
+        setLocations(storedLocations);
+      }
     };
     loadLocations();
   }, []);
@@ -41,18 +43,26 @@ export const LocationProvider = ({ children }) => {
     const weatherData = await fetchWeatherData(cityName);
     const newLocation = { location: cityName, ...weatherData };
     setLocations((prevLocations) => {
+      if (!Array.isArray(prevLocations)) {
+        console.error("prevLocations is not an array");
+        return prevLocations;
+      }
       const updatedLocations = [...prevLocations, newLocation];
-      setDataToAsyncStorage(newLocation);  
+      setDataToAsyncStorage(updatedLocations);
       return updatedLocations;
     });
   };
 
-  const removeLocation = (cityName) => {
+  const removeLocation = async (cityName) => {
     setLocations((prevLocations) => {
+      if (!Array.isArray(prevLocations)) {
+        console.error("prevLocations is not an array");
+        return prevLocations;
+      }
       const updatedLocations = prevLocations.filter(
         (location) => location.location !== cityName
       );
-      removeDataFromAsyncStorage(cityName);  
+      setDataToAsyncStorage(updatedLocations);
       return updatedLocations;
     });
   };
