@@ -9,14 +9,14 @@ import {
   TouchableOpacity,
 } from "react-native";
 import WeatherInfo from "./weatherInfo";
- 
+import ProfileScreen from "../auth/user";
 import { AntDesign } from "@expo/vector-icons";
 import axios from "axios";
 import {
   getDataFromAsyncStorage,
   setDataToAsyncStorage,
 } from "../../utils/asyncStorage";
- 
+import SettingScreen from "./settingScreen";
 import * as Location from "expo-location";
 
 const API_KEY = "be1c284fc6564c83938100901242407";
@@ -35,13 +35,7 @@ const fetchAddressFromCoordinates = async (latitude, longitude) => {
       response.data.results &&
       response.data.results.length > 0
     ) {
-      const components = response.data.results[0].components;
-      return (
-        components.city ||
-        components.town ||
-        components.village ||
-        "Unknown location"
-      );
+      return response.data.results[0].formatted;
     } else {
       console.error("No results found for the given coordinates.");
       return "Unknown location";
@@ -71,8 +65,9 @@ export async function getMyData(cityName) {
 const Weather = ({ navigation, route }) => {
   const [weatherData, setWeatherData] = useState([]);
   const [currentLocation, setCurrentLocation] = useState("");
-  const [currentTemp, setCurrentTemp] = useState("");
+  const [currentTemp, setCurrentTemp] = useState(null);
   const [currentCondition, setCurrentCondition] = useState("");
+
   const cityName = route?.params?.cityName;
 
   async function getLocations() {
@@ -97,12 +92,14 @@ const Weather = ({ navigation, route }) => {
     setCurrentLocation(address);
 
     const weatherData = await getMyData(`${latitude},${longitude}`);
-    console.log("Weather Data for Current Location:", weatherData);
+    setWeatherData(weatherData);
 
     if (weatherData && weatherData.current) {
       setCurrentTemp(weatherData.current.temp_c);
       setCurrentCondition(weatherData.current.condition.text);
     }
+
+    await setDataToAsyncStorage(weatherData);
   };
 
   useEffect(() => {
@@ -146,20 +143,18 @@ const Weather = ({ navigation, route }) => {
           />
         </TouchableOpacity>
       </View>
-      <TouchableOpacity
-        onPress={() =>
-          navigation.navigate("DetailedWeather", {
-            location: currentLocation,
-            allLocations: [currentLocation],
-          })
-        }
-      >
+      <TouchableOpacity onPress={() => navigation.navigate("DetailedWeather")}>
         <View style={styles.locationHeader}>
-          <View>
-            <Text style={styles.locationText}>{currentLocation}</Text>
-            <Text style={styles.locationCondition}>{currentCondition}</Text>
-          </View>
-          <Text style={styles.locationTemp}>{currentTemp}°C</Text>
+          <Text style={{ fontWeight: "bold", fontSize: 22 }}>
+            {" "}
+            Current Location
+          </Text>
+          <Text style={styles.locationText}>{currentLocation}</Text>
+          {currentTemp !== null && (
+            <Text style={styles.weatherText}>
+              {currentTemp}°C, {currentCondition}
+            </Text>
+          )}
         </View>
       </TouchableOpacity>
 
@@ -209,27 +204,53 @@ const styles = StyleSheet.create({
     position: "relative",
     borderRadius: 12,
     margin: 7,
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
   },
   locationText: {
     fontSize: 18,
     color: "black",
-    fontWeight: "bold",
-    fontSize: 24,
-    marginBottom: 10,
-    marginLeft: 12,
+    textAlign: "center",
   },
-  locationTemp: {
-    fontWeight: "bold",
-    fontSize: 34,
-  },
-  locationCondition: {
+  weatherText: {
     fontSize: 18,
     color: "black",
-    marginBottom: 10,
-    marginLeft: 12,
+    textAlign: "center",
+    marginTop: 5,
   },
 });
 export default Weather;
+
+// async.js
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import * as Location from "expo-location";
+
+export const getDataFromAsyncStorage = async () => {
+  try {
+    const jsonValue = await AsyncStorage.getItem("weatherData");
+    return jsonValue ? JSON.parse(jsonValue) : [];
+  } catch (err) {
+    console.log("Error retrieving data from AsyncStorage", err);
+    return [];
+  }
+};
+
+export const setDataToAsyncStorage = async (data) => {
+  try {
+    const jsonValue = JSON.stringify(data);
+    await AsyncStorage.setItem("weatherData", jsonValue);
+  } catch (err) {
+    console.log("Error saving data to AsyncStorage", err);
+  }
+};
+
+export const removeDataFromAsyncStorage = async (location) => {
+  try {
+    const locationsData = await getDataFromAsyncStorage();
+    const updatedData = locationsData.filter(
+      (item) => item.location !== location
+    );
+    const jsonValue = JSON.stringify(updatedData);
+    await AsyncStorage.setItem("weatherData", jsonValue);
+  } catch (err) {
+    console.log("Error removing data from AsyncStorage", err);
+  }
+};
