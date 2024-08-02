@@ -12,31 +12,19 @@ import { Feather } from "@expo/vector-icons";
 import { getMyData } from ".";
 import PagerView from "react-native-pager-view";
 
-const DetailedWeather = ({ route, navigation }) => {
-  const { allLocations } = route.params;
-  const [weatherDataList, setWeatherDataList] = useState([]);
+const DetailedWeather = ({ location = "Chandigarh" }) => {
+  const [weatherData, setWeatherData] = useState([]);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
-  const fetchWeatherData = async (location) => {
-    try {
-      const data = await getMyData(location);
-      return data;
-    } catch (error) {
-      console.error(error);
-      return null;
-    }
-  };
-
   useEffect(() => {
-    const fetchDataForAllLocations = async () => {
-      const data = await Promise.all(
-        allLocations.map((loc) => fetchWeatherData(loc.location))
-      );
-      setWeatherDataList(data);
-    };
+    getMyData(location).then((res) => {
+      setWeatherData(res);
+    });
+  }, [location]);
 
-    fetchDataForAllLocations();
-  }, [allLocations]);
+  // useEffect(() => {
+  //   console.log(allLocations);
+  // }, [])
 
   const onRefresh = useCallback(() => {
     setIsRefreshing(true);
@@ -45,29 +33,25 @@ const DetailedWeather = ({ route, navigation }) => {
     }, 2000);
   }, []);
 
-  const renderForecastItem = ({ item }) => (
-    <View style={styles.forecastItem}>
-      <Text style={styles.forecastTime}>
-        {item.time ? item.time.split(" ")[1] : "N/A"}
-      </Text>
-      <Image
-        style={styles.icon}
-        source={{ uri: `https:${item.condition.icon}` }}
-      />
-      <Text style={styles.forecastTemp}>{item.temp_c}°C</Text>
-      <Text style={styles.forecastCondition}>{item.condition.text}</Text>
-    </View>
-  );
+  if (!weatherData || weatherData.length < 1) {
+    return (
+      <View style={styles.container}>
+        <Text style={styles.errorText}>Weather data not available</Text>
+      </View>
+    );
+  }
+  // component 1
 
-  const renderHeader = (weatherData) => (
+  const renderHeader = () => (
     <View style={styles.headerContainer}>
       <Text style={styles.cityName}>{weatherData.location.name}</Text>
       <Text style={styles.text}>{weatherData.location.tz_id}</Text>
       <Text style={styles.text}>{weatherData.location.localtime}</Text>
     </View>
   );
+  // component 2
 
-  const renderHeader2 = (weatherData) => (
+  const renderHeader2 = () => (
     <View style={styles.weatherHeading}>
       <View style={styles.leftContainer}>
         <Text style={styles.heading}>Weather</Text>
@@ -82,9 +66,68 @@ const DetailedWeather = ({ route, navigation }) => {
       />
     </View>
   );
+  //component 3
+  // 24 hour forecast
+  const renderForecastItem = ({ item }) => (
+    <View style={styles.forecastItem}>
+      <Text style={styles.forecastTime}>
+        {item.time ? item.time.split(" ")[1] : "N/A"}
+      </Text>
+      <Image
+        style={styles.icon}
+        source={{ uri: `https:${item.condition.icon}` }}
+      />
+      <Text style={styles.forecastTemp}>{item.temp_c}°C</Text>
+      <Text style={styles.forecastCondition}>{item.condition.text}</Text>
+    </View>
+  );
 
-  const renderDetails = (weatherData) => (
+  const renderForecastSection = () => (
+    <View style={styles.forecastSection}>
+      <Text style={styles.forecastTitle}>24 Hour Forecast</Text>
+      <FlatList
+        data={weatherData.forecast.forecastday[0].hour}
+        renderItem={renderForecastItem}
+        keyExtractor={(item, index) => index.toString()}
+        horizontal={true}
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={styles.forecastList}
+      />
+    </View>
+  );
+
+  // component 4
+  // 7 days forecast
+  const renderFullWeekForecast = () => {
+    const forecastData = weatherData.forecast.forecastday.slice(0, 7);
+
+    return (
+      <View style={styles.forecastSection1}>
+        <Text style={styles.forecastTitle}>Full Week Forecast</Text>
+        <View style={styles.fullWeekContainer}>
+          {forecastData.map((item) => (
+            <View key={item.date} style={styles.forecastItem1}>
+              <View style={styles.forecastItemContent}>
+                <Text style={styles.forecastDate}>{item.date}</Text>
+                <Image
+                  style={styles.icon}
+                  source={{ uri: `https:${item.day.condition.icon}` }}
+                />
+                <Text style={styles.forecastTemp}>{item.day.avgtemp_c}°C</Text>
+                <Text style={styles.forecastCondition}>
+                  {item.day.condition.text}
+                </Text>
+              </View>
+            </View>
+          ))}
+        </View>
+      </View>
+    );
+  };
+  // component 5
+  const renderDetails = () => (
     <View>
+      <Text style={styles.forecastTitle}>Condition</Text>
       <View style={styles.detailsRow}>
         <View style={styles.detailContainer}>
           <Feather name="wind" size={24} color="skyblue" />
@@ -134,80 +177,29 @@ const DetailedWeather = ({ route, navigation }) => {
     </View>
   );
 
-  const renderForecastSection = (weatherData) => (
-    <View style={styles.forecastSection}>
-      <Text style={styles.forecastTitle}>24 Hour Forecast</Text>
-      <FlatList
-        data={weatherData.forecast.forecastday[0].hour}
-        renderItem={renderForecastItem}
-        keyExtractor={(item, index) => index.toString()}
-        horizontal={true}
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.forecastList}
-      />
-    </View>
-  );
+  const data = [
+    { type: "header" },
+    { type: "header2" },
+    { type: "forecastSection" },
+    { type: "fullWeekForecast" },
+    { type: "details" },
+  ];
 
-  const renderFullWeekForecast = (weatherData) => {
-    const forecastData = weatherData.forecast.forecastday.slice(0, 7);
-
-    return (
-      <View style={styles.forecastSection1}>
-        <Text style={styles.forecastTitle}>Full Week Forecast</Text>
-        <FlatList
-          data={forecastData}
-          renderItem={({ item }) => (
-            <View style={styles.forecastItem1}>
-              <View style={styles.forecastItemContent}>
-                <Text style={styles.forecastDate}>{item.date}</Text>
-                <Image
-                  style={styles.icon}
-                  source={{ uri: `https:${item.day.condition.icon}` }}
-                />
-                <Text style={styles.forecastTemp}>{item.day.avgtemp_c}°C</Text>
-                <Text style={styles.forecastCondition}>
-                  {item.day.condition.text}
-                </Text>
-              </View>
-            </View>
-          )}
-          keyExtractor={(item) => item.date}
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={styles.forecastList}
-        />
-      </View>
-    );
+  const renderItem = ({ item }) => {
+    if (item.type === "header") return renderHeader();
+    if (item.type === "header2") return renderHeader2();
+    if (item.type === "forecastSection") return renderForecastSection();
+    if (item.type === "fullWeekForecast") return renderFullWeekForecast();
+    if (item.type === "details") return renderDetails();
+    return null;
   };
 
-  const renderItem = (weatherData) => {
-    if (!weatherData) {
-      return (
-        <View style={styles.container}>
-          <Text style={styles.errorText}>Weather data not available</Text>
-        </View>
-      );
-    }
-
-    return (
+  return (
+    <View style={styles.page}>
       <FlatList
-        data={[
-          { type: "header" },
-          { type: "header2" },
-          { type: "forecastSection" },
-          { type: "fullWeekForecast" },
-          { type: "details" },
-        ]}
-        renderItem={({ item }) => {
-          if (item.type === "header") return renderHeader(weatherData);
-          if (item.type === "header2") return renderHeader2(weatherData);
-          if (item.type === "forecastSection")
-            return renderForecastSection(weatherData);
-          if (item.type === "fullWeekForecast")
-            return renderFullWeekForecast(weatherData);
-          if (item.type === "details") return renderDetails(weatherData);
-          return null;
-        }}
-        keyExtractor={(item, index) => index.toString()}
+        data={data}
+        renderItem={renderItem}
+        keyExtractor={(item, index) => item?.location?.name || index.toString()}
         contentContainerStyle={styles.flatListContent}
         ListFooterComponent={
           <View style={styles.footerContainer}>
@@ -223,31 +215,35 @@ const DetailedWeather = ({ route, navigation }) => {
           </View>
         }
         refreshControl={
-          <RefreshControl
-            refreshing={isRefreshing}
-            onRefresh={onRefresh}
-            colors={["black"]}
-            tintColor={"black"}
-          />
+          <RefreshControl refreshing={isRefreshing} onRefresh={onRefresh} />
         }
       />
-    );
-  };
+    </View>
+  );
+};
 
-  if (weatherDataList.length < 1) {
-    return (
-      <View style={styles.container}>
-        <Text style={styles.errorText}>Loading weather data...</Text>
-      </View>
+const DetailedWeatherWrapper = ({ route, navigation }) => {
+  const { location, allLocations = [] } = route.params;
+  const [pageIndex, setPageIndex] = useState(0);
+
+  useEffect(() => {
+    let locationIndex = allLocations.findIndex(
+      (val) => val.location === location
     );
-  }
+    if (locationIndex < 0) locationIndex = 0;
+    setPageIndex(locationIndex);
+  }, []);
 
   return (
-    <PagerView style={styles.container} initialPage={0}>
-      {weatherDataList.map((weatherData, index) => (
-        <View key={index} style={styles.page}>
-          {renderItem(weatherData)}
-        </View>
+    <PagerView
+      style={{
+        flex: 1,
+        backgroundColor: "rgb(40, 55, 50)",
+      }}
+      initialPage={pageIndex}
+    >
+      {allLocations.map((locationData, index) => (
+        <DetailedWeather location={locationData.location} />
       ))}
     </PagerView>
   );
@@ -402,7 +398,10 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   forecastSection1: {
-    flex: 1,
+    marginVertical: 10,
+  },
+  fullWeekContainer: {
+    maxHeight: 1000,
   },
   forecastItemContent: {
     flexDirection: "row",
@@ -434,4 +433,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default DetailedWeather;
+export default DetailedWeatherWrapper;

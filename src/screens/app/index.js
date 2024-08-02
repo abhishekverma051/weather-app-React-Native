@@ -9,14 +9,10 @@ import {
   TouchableOpacity,
 } from "react-native";
 import WeatherInfo from "./weatherInfo";
- 
 import { AntDesign } from "@expo/vector-icons";
 import axios from "axios";
-import {
-  getDataFromAsyncStorage,
-  setDataToAsyncStorage,
-} from "../../utils/asyncStorage";
- 
+import { getDataFromAsyncStorage } from "../../utils/asyncStorage";
+import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import * as Location from "expo-location";
 
 const API_KEY = "be1c284fc6564c83938100901242407";
@@ -27,8 +23,6 @@ const fetchAddressFromCoordinates = async (latitude, longitude) => {
     const response = await axios.get(
       `https://api.opencagedata.com/geocode/v1/json?q=${latitude}+${longitude}&key=${OPENCAGE_API_KEY}`
     );
-
-    console.log("OpenCage API Response:", response.data);
 
     if (
       response.data &&
@@ -43,7 +37,6 @@ const fetchAddressFromCoordinates = async (latitude, longitude) => {
         "Unknown location"
       );
     } else {
-      console.error("No results found for the given coordinates.");
       return "Unknown location";
     }
   } catch (error) {
@@ -91,18 +84,19 @@ const Weather = ({ navigation, route }) => {
       accuracy: Location.Accuracy.High,
     });
     const { latitude, longitude } = location.coords;
-    console.log(`Latitude: ${latitude}, Longitude: ${longitude}`);
 
     const address = await fetchAddressFromCoordinates(latitude, longitude);
     setCurrentLocation(address);
 
     const weatherData = await getMyData(`${latitude},${longitude}`);
-    console.log("Weather Data for Current Location:", weatherData);
-
     if (weatherData && weatherData.current) {
       setCurrentTemp(weatherData.current.temp_c);
       setCurrentCondition(weatherData.current.condition.text);
     }
+  };
+
+  const handleDelete = () => {
+    setWeatherData([]);
   };
 
   useEffect(() => {
@@ -111,10 +105,6 @@ const Weather = ({ navigation, route }) => {
       setWeatherData(res);
     });
   }, [cityName]);
-
-  useEffect(() => {
-    console.log(weatherData, "index");
-  }, [weatherData]);
 
   if (!weatherData || weatherData.length < 1) {
     return (
@@ -127,25 +117,54 @@ const Weather = ({ navigation, route }) => {
   return (
     <View style={styles.container}>
       <View style={styles.topContainer}>
-        <TouchableOpacity>
-          <FontAwesome
-            name="list-ul"
-            size={28}
-            color="white"
-            style={styles.icon}
-            onPress={() => navigation.navigate("SettingScreen")}
-          />
-        </TouchableOpacity>
-        <TouchableOpacity>
-          <FontAwesome
-            name="user-circle"
-            size={34}
-            color="white"
-            style={styles.icon1}
-            onPress={() => navigation.navigate("ProfileScreen")}
-          />
-        </TouchableOpacity>
+        <View style={styles.comtainer}>
+          <TouchableOpacity>
+            <FontAwesome
+              name="list-ul"
+              size={28}
+              color="white"
+              style={styles.icon}
+              onPress={() => navigation.navigate("SettingScreen")}
+            />
+          </TouchableOpacity>
+          <TouchableOpacity>
+            <FontAwesome
+              name="user-circle"
+              size={34}
+              color="white"
+              style={styles.icon1}
+              onPress={() => navigation.navigate("ProfileScreen")}
+            />
+          </TouchableOpacity>
+        </View>
+
+        <View style={styles.comtainer}>
+          <TouchableOpacity onPress={handleDelete}>
+            <MaterialIcons
+              name="delete"
+              size={34}
+              color="white"
+              style={styles.icon1}
+            />
+          </TouchableOpacity>
+          <TouchableOpacity
+            onPress={() =>
+              navigation.navigate("DetailedWeather", {
+                location: "",
+                allLocations: weatherData,
+              })
+            }
+          >
+            <MaterialIcons
+              name="zoom-out-map"
+              size={34}
+              color="white"
+              style={styles.icon1}
+            />
+          </TouchableOpacity>
+        </View>
       </View>
+
       <TouchableOpacity
         onPress={() =>
           navigation.navigate("DetailedWeather", {
@@ -181,6 +200,10 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "rgb(40, 55, 50)",
   },
+  comtainer: {
+    flexDirection: "row",
+    marginRight: 10,
+  },
   button: {
     position: "absolute",
     bottom: 30,
@@ -201,7 +224,7 @@ const styles = StyleSheet.create({
   },
   locationHeader: {
     padding: 10,
-    backgroundColor: "rgba(240, 255, 250, 0.7)",
+    backgroundColor: "#7acccc",
     borderBottomWidth: 1,
     borderBottomColor: "#333",
     width: "95%",
@@ -232,4 +255,5 @@ const styles = StyleSheet.create({
     marginLeft: 12,
   },
 });
+
 export default Weather;

@@ -1,6 +1,5 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import * as Location from "expo-location";
-
+ 
 export const getDataFromAsyncStorage = async () => {
   try {
     const jsonValue = await AsyncStorage.getItem("weatherData");
