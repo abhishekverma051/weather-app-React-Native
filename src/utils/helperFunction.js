@@ -38,3 +38,5 @@ export async function setData(location_name) {
     return "Error fetching location";
   }
 };
+
+

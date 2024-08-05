@@ -36,7 +36,7 @@ const DetailedWeather = ({ location = "Chandigarh" }) => {
   if (!weatherData || weatherData.length < 1) {
     return (
       <View style={styles.container}>
-        <Text style={styles.errorText}>Weather data not available</Text>
+         
       </View>
     );
   }
