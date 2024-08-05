@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   TextInput,
@@ -12,45 +12,52 @@ import {
 import { FontAwesome } from "@expo/vector-icons";
 import axios from "axios";
 import { useLocations } from "./locationContext";
+import { getDataFromAsyncStorage } from "../../utils/asyncStorage";
 
 const API_KEY = "be1c284fc6564c83938100901242407";
-
-const cityData = [
-  "New York",
-  "Los Angeles",
-  "Chicago",
-  "Houston",
-  "Phoenix",
-  "Philadelphia",
-  "San Antonio",
-  "San Diego",
-  "Dallas",
-  "San Jose",
-];
 
 const validateCityName = async (cityName) => {
   try {
     const response = await axios.get(
-      `http://api.weatherapi.com/v1/current.json?key=${API_KEY}&q=${cityName}`
+      `http://api.weatherapi.com/v1/search.json?key=${API_KEY}&q=${cityName}`
     );
-    return response.status === 200;
+    return response.status === 200 && response.data.length > 0;
   } catch (error) {
+    console.error("Error validating city name:", error);
     return false;
+  }
+};
+
+const fetchCitySuggestions = async (query) => {
+  try {
+    const response = await axios.get(
+      `http://api.weatherapi.com/v1/search.json?key=${API_KEY}&q=${query}`
+    );
+    if (response.status === 200 && response.data.length > 0) {
+      return response.data.map((city) => city.name);
+    }
+    return [];
+  } catch (error) {
+    console.error("Error fetching city suggestions:", error);
+    return [];
   }
 };
 
 const SearchScreen = ({ navigation }) => {
   const [cityName, setCityName] = useState("");
-  const { addLocation } = useLocations();
+  const { addLocation, locations, loadLocations } = useLocations();
   const [filteredSuggestions, setFilteredSuggestions] = useState([]);
 
-  const handleInputChange = (text) => {
+  useEffect(() => {
+    loadLocations();
+  }, []);
+
+  const handleInputChange = async (text) => {
     setCityName(text);
+
     if (text) {
-      const filtered = cityData.filter((city) =>
-        city.toLowerCase().includes(text.toLowerCase())
-      );
-      setFilteredSuggestions(filtered);
+      const suggestions = await fetchCitySuggestions(text);
+      setFilteredSuggestions(suggestions);
     } else {
       setFilteredSuggestions([]);
     }
@@ -64,8 +71,24 @@ const SearchScreen = ({ navigation }) => {
   const handleSearch = async () => {
     if (cityName.trim()) {
       const isValid = await validateCityName(cityName);
+      const normalizedCityName = cityName.trim().toLowerCase();
 
-      if (isValid) {
+      const normalizedLocations = locations
+        .filter((location) => typeof location === "string")
+        .map((location) => location.toLowerCase());
+
+      if (normalizedLocations.includes(normalizedCityName)) {
+        Alert.alert(
+          "Location Already Added",
+          "This location is already added. Please enter a different location.",
+          [
+            {
+              text: "OK",
+              onPress: () => setCityName(""),
+            },
+          ]
+        );
+      } else if (isValid) {
         Alert.alert(
           "Confirm Modification",
           "Are you sure you want to add this location?",
@@ -137,7 +160,6 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     marginBottom: 20,
     paddingHorizontal: 15,
-    
     borderRadius: 12,
     color: "black",
     backgroundColor: "white",
@@ -163,15 +185,15 @@ const styles = StyleSheet.create({
   },
   suggestion: {
     padding: 10,
-    backgroundColor: "#ddd",
-    borderBottomWidth: 1,
+    backgroundColor: "white",
     borderColor: "#bbb",
   },
   suggestionText: {
     fontSize: 18,
   },
   suggestionsList: {
-    maxHeight: 150,  
+    maxHeight: 150,
+    borderRadius: 5,
   },
 });
 

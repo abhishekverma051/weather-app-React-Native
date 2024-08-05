@@ -235,6 +235,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
+    height: 140,
   },
   locationText: {
     fontSize: 18,
@@ -249,9 +250,8 @@ const styles = StyleSheet.create({
     fontSize: 34,
   },
   locationCondition: {
-    fontSize: 18,
-    color: "black",
-    marginBottom: 10,
+    fontSize: 14,
+    color: "black",            
     marginLeft: 12,
   },
 });

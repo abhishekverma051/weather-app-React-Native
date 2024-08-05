@@ -66,10 +66,17 @@ export const LocationProvider = ({ children }) => {
       return updatedLocations;
     });
   };
+  
 
+ const loadLocations = async () => {
+   const storedLocations = await getDataFromAsyncStorage();
+   if (storedLocations) {
+     setLocations(storedLocations);
+   }
+ };
   return (
     <LocationContext.Provider
-      value={{ locations, addLocation, removeLocation }}
+      value={{ locations, addLocation, removeLocation,loadLocations}}
     >
       {children}
     </LocationContext.Provider>

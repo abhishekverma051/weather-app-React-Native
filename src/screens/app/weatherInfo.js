@@ -19,8 +19,7 @@ import { useLocations } from "./locationContext";
 import {
   getDataFromAsyncStorage,
   setDataToAsyncStorage,
-  removeDataFromAsyncStorage,
-} from "/Users/tanmaygirdhar/ReactNative/WeatherApp/src/utils/asyncStorage.js";
+ } from "/Users/tanmaygirdhar/ReactNative/WeatherApp/src/utils/asyncStorage.js";
 
 const WeatherInfo = ({ navigation }) => {
   const { locations, removeLocation } = useLocations();
