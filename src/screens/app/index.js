@@ -251,7 +251,7 @@ const styles = StyleSheet.create({
   },
   locationCondition: {
     fontSize: 14,
-    color: "black",            
+    color: "black",
     marginLeft: 12,
   },
 });

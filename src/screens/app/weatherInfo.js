@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+ import React, { useState, useEffect, useCallback } from "react";
 import {
   View,
   Text,
@@ -8,6 +8,7 @@ import {
   RefreshControl,
   Alert,
   TextInput,
+  FlatList,
 } from "react-native";
 import {
   GestureHandlerRootView,
@@ -19,14 +20,16 @@ import { useLocations } from "./locationContext";
 import {
   getDataFromAsyncStorage,
   setDataToAsyncStorage,
- } from "/Users/tanmaygirdhar/ReactNative/WeatherApp/src/utils/asyncStorage.js";
-
+} from "../../utils/asyncStorage";
+import { LinearGradient } from "expo-linear-gradient";
 const WeatherInfo = ({ navigation }) => {
   const { locations, removeLocation } = useLocations();
   const [data, setData] = useState(locations);
   const [refreshing, setRefreshing] = useState(false);
   const [editingLocation, setEditingLocation] = useState(null);
   const [newLocation, setNewLocation] = useState("");
+  const [page, setPage] = useState(1);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const loadData = async () => {
@@ -40,11 +43,20 @@ const WeatherInfo = ({ navigation }) => {
     setData(locations);
   }, [locations]);
 
-  const fetchData = async () => {
+  const fetchData = async (page = 1) => {
     setRefreshing(true);
     const updatedData = await getDataFromAsyncStorage();
-    setData(updatedData);
+    setData(page === 1 ? updatedData : [...data, ...updatedData]);
     setRefreshing(false);
+    setLoading(false);
+  };
+
+  const loadMoreData = () => {
+    if (!loading) {
+      setLoading(true);
+      setPage((prevPage) => prevPage + 1);
+      fetchData(page + 1);
+    }
   };
 
   const confirmDelete = (location) => {
@@ -146,6 +158,7 @@ const WeatherInfo = ({ navigation }) => {
   );
 
   const onRefresh = useCallback(() => {
+    setPage(1);
     fetchData();
   }, []);
 
@@ -155,18 +168,23 @@ const WeatherInfo = ({ navigation }) => {
   };
 
   return (
+    
     <GestureHandlerRootView style={{ flex: 1 }}>
       <View style={styles.container}>
         {data && data.length > 0 ? (
           <DraggableFlatList
             data={data}
-            onDragEnd={handleDragEnd}
+            onEndReached={loadMoreData}
+            onEndReachedThreshold={0.5}
+            onRefresh={onRefresh}
+            refreshing={refreshing}
             renderItem={renderItem}
             keyExtractor={(item) => item.location || item.id}
             contentContainerStyle={styles.flatListContent}
-            refreshControl={
-              <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+            ListFooterComponent={
+              loading ? <ActivityIndicator size="large" color="red" /> : null
             }
+            onDragEnd={handleDragEnd}
           />
         ) : (
           <View style={styles.centered}>

@@ -11,6 +11,7 @@ import {
 import { Feather } from "@expo/vector-icons";
 import { getMyData } from ".";
 import PagerView from "react-native-pager-view";
+import { LinearGradient } from "expo-linear-gradient";
 
 const DetailedWeather = ({ location = "Chandigarh" }) => {
   const [weatherData, setWeatherData] = useState([]);
